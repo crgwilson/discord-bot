@@ -8,13 +8,14 @@ import (
 
 const (
 	testName        string = "test"
+	testAlias       string = "testAlias"
 	testDescription string = "this is a unit test"
 	testUsage       string = "test <SOME ARG>"
 )
 
 var testErr = errors.New("this is a test")
 
-func joinSlice(args []string) (string, error) {
+func joinSlice(b *Bot, args []string) (string, error) {
 	val := strings.Join(args, ",")
 	return val, nil
 }
@@ -24,8 +25,10 @@ func returnAnError(args []string) (string, error) {
 }
 
 func TestCommand(t *testing.T) {
+	testAliases := []string{testAlias}
+
 	t.Run("successful command invocation", func(t *testing.T) {
-		testCommand := NewCommand(testName, testDescription, testUsage, joinSlice)
+		testCommand := NewCommand(testName, testDescription, testUsage, testAliases, joinSlice)
 
 		if testCommand.Name != testName {
 			t.Errorf("got %q, want %q", testCommand.Name, testName)
@@ -35,28 +38,6 @@ func TestCommand(t *testing.T) {
 		}
 		if testCommand.Usage != testUsage {
 			t.Errorf("got %q, want %q", testCommand.Usage, testDescription)
-		}
-
-		testArgs := []string{"this", "is", "a", "unit", "test"}
-		output, err := testCommand.Call(testArgs)
-
-		if err != nil {
-			t.Errorf("got %v, want no error", err)
-		}
-
-		testOutput := strings.Join(testArgs, ",")
-		if output != testOutput {
-			t.Errorf("got %q, want %q", output, testOutput)
-		}
-	})
-
-	t.Run("failing command invocation", func(t *testing.T) {
-		testCommand := NewCommand(testName, testDescription, testUsage, returnAnError)
-		args := make([]string, 0)
-		_, err := testCommand.Call(args)
-
-		if err != testErr {
-			t.Errorf("got %v, want %v", err, testErr)
 		}
 	})
 }

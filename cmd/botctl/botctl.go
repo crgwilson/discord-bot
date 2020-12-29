@@ -26,7 +26,7 @@ Available Flags:
 
 var ErrMissingRequiredArgument = errors.New("Required argument was not provided")
 
-func pingPong(args []string) (string, error) {
+func pingPong(b *bot.Bot, args []string) (string, error) {
 	return "pong", nil
 }
 
@@ -49,10 +49,16 @@ func main() {
 		panic(err)
 	}
 
-	pingPongCommand := bot.NewCommand("ping", "do some useless crap", "", pingPong)
-	botCommands := []*bot.Command{pingPongCommand}
-	botRouter, _ := bot.NewMessageRouter(botCommands)
-	bot := bot.NewBot(discord, botRouter, botConfig)
+	pingPongAliases := make([]string, 0)
+	pingPongCommand := bot.NewCommand("ping", "do some useless crap", "", pingPongAliases, pingPong)
+
+	userIgnoreList := make([]string, 5)
+	channelIgnoreList := make([]string, 5)
+
+	botFilter := bot.NewMessageFilter(userIgnoreList, channelIgnoreList)
+
+	bot := bot.NewBot(discord, botFilter, botConfig)
+	bot.RegisterRoute(pingPongCommand)
 
 	err = bot.Run()
 	if err != nil {

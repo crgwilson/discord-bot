@@ -7,6 +7,14 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+const (
+	testCommandPrefix      string = "!"
+	testCommandName        string = "test"
+	testCommandDescription string = "test description"
+	testCommandUsage       string = "test usage"
+	testCommandAlias       string = "alias"
+)
+
 func callback(b *Bot, args []string) (string, error) {
 	joinedSlice := strings.Join(args, ",")
 	return joinedSlice, nil
@@ -14,10 +22,10 @@ func callback(b *Bot, args []string) (string, error) {
 
 func TestBot(t *testing.T) {
 	testCommand := NewCommand(
-		"test",
-		"test description",
-		"this is a test",
-		make([]string, 0),
+		testCommandName,
+		testCommandDescription,
+		testCommandUsage,
+		[]string{testCommandAlias},
 		callback,
 	)
 
@@ -40,7 +48,7 @@ func TestBot(t *testing.T) {
 	})
 
 	t.Run("find existing routes", func(t *testing.T) {
-		result, err := testBot.FindRoute("test")
+		result, err := testBot.FindRoute(testCommandName)
 
 		if err != nil {
 			t.Errorf("got %v, want no error", err)
@@ -60,7 +68,7 @@ func TestBot(t *testing.T) {
 	})
 
 	t.Run("route message to callback with no args", func(t *testing.T) {
-		testMessage := "!test"
+		testMessage := testCommandPrefix + testCommandName
 
 		result, err := testBot.RouteMessage(testMessage)
 		if err != nil {
@@ -73,7 +81,7 @@ func TestBot(t *testing.T) {
 	})
 
 	t.Run("route message to callback with some args", func(t *testing.T) {
-		testMessage := "!test here are some args"
+		testMessage := testCommandPrefix + testCommandName + " here are some args"
 		expectedResult := "here,are,some,args"
 
 		result, err := testBot.RouteMessage(testMessage)
@@ -83,6 +91,19 @@ func TestBot(t *testing.T) {
 
 		if result != expectedResult {
 			t.Errorf("got %q, want %q", result, expectedResult)
+		}
+	})
+
+	t.Run("route aliases should work too", func(t *testing.T) {
+		testMessage := testCommandPrefix + testCommandAlias
+
+		result, err := testBot.RouteMessage(testMessage)
+		if err != nil {
+			t.Errorf("got %v, want no error", err)
+		}
+
+		if result != "" {
+			t.Errorf("got %s, want empty string", result)
 		}
 	})
 }

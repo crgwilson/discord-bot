@@ -45,12 +45,16 @@ func (b *Bot) RouteMessage(message string) (string, error) {
 }
 
 func (b *Bot) RegisterRoute(command *Command) error {
-	_, err := b.FindRoute(command.Name)
-	if err != ErrRouteNotFound {
-		return ErrRouteAlreadyExists
-	}
+	routesToAdd := append(command.Aliases, command.Name)
 
-	b.NamedRoutes[command.Name] = command
+	for _, r := range routesToAdd {
+		_, err := b.FindRoute(r)
+		if err != ErrRouteNotFound {
+			return ErrRouteAlreadyExists
+		}
+
+		b.NamedRoutes[r] = command
+	}
 
 	return nil
 }

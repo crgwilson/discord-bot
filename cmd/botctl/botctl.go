@@ -11,10 +11,7 @@ import (
 )
 
 const (
-	CliName        = "botctl"
-	CliVersion     = "0.0.1"
-	CliDescription = "Manage the discord bot"
-	CliHelp        = `botctl: Manage the discord bot
+	CliHelp = `botctl: Manage the discord bot
 
 Usage:
 	botctl -flag <value>
@@ -25,10 +22,6 @@ Available Flags:
 )
 
 var ErrMissingRequiredArgument = errors.New("Required argument was not provided")
-
-func pingPong(b *bot.Bot, args []string) (string, error) {
-	return "pong", nil
-}
 
 func main() {
 	configFilePtr := flag.String("f", "", "The file path of the yaml file containing the bot config")
@@ -49,8 +42,7 @@ func main() {
 		panic(err)
 	}
 
-	pingPongAliases := make([]string, 0)
-	pingPongCommand := bot.NewCommand("ping", "do some useless crap", "", pingPongAliases, pingPong)
+	helpCommand := NewHelpCommand()
 
 	userIgnoreList := make([]string, 5)
 	channelIgnoreList := make([]string, 5)
@@ -58,7 +50,7 @@ func main() {
 	botFilter := bot.NewMessageFilter(userIgnoreList, channelIgnoreList)
 
 	bot := bot.NewBot(discord, botFilter, botConfig)
-	bot.RegisterRoute(pingPongCommand)
+	bot.RegisterRoute(helpCommand)
 
 	err = bot.Run()
 	if err != nil {
